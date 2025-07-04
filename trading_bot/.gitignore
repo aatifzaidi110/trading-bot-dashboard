@@ -1,40 +1,13 @@
-# Byte-compiled / cache files
+# Ignore system
 __pycache__/
-*.py[cod]
-*.pyo
-
-# Environment
+*.pyc
 .env
-.venv/
-env/
-venv/
-*.env
+.vscode/
+.idea/
 
-# Streamlit
-.streamlit/config.toml
-
-# Jupyter
-.ipynb_checkpoints/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs & Data
-*.log
-*.csv
-*.json
-*.sqlite3
+# Ignore data logs
 results/
 trades/
-backtests/
-cache/
-*.db
 
-# VSCode
-.vscode/
-
-# Python
-*.egg-info/
-*.egg
-*.bak
+# Streamlit cloud
+.streamlit/secrets.toml

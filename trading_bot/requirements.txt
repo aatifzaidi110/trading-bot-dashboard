@@ -1,6 +1,6 @@
-pandas
-numpy
-requests
 streamlit
 yfinance
-requests
+pandas
+numpy
+scikit-learn
+matplotlib
