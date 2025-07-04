@@ -1,6 +1,6 @@
 ### ✅ Part 4: `pages/3_Past_Trades.py`
 
-```python
+
 # streamlit_app/pages/3_Past_Trades.py
 
 import os
