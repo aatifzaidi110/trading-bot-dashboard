@@ -1,0 +1,11 @@
+streamlit
+pandas
+numpy
+yfinance
+matplotlib
+plotly
+requests
+beautifulsoup4
+scikit-learn
+requests
+# Force Streamlit Cloud rebuild
