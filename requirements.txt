@@ -8,4 +8,5 @@ requests
 beautifulsoup4
 scikit-learn
 requests
+openpyxl
 # Force Streamlit Cloud rebuild

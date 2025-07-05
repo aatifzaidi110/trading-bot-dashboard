@@ -11,7 +11,7 @@ from datetime import datetime
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(ROOT_DIR)
 
-from strategy.combo_strategy import ComboStrategy
+from trading_bot.strategy.combo_strategy import ComboStrategy
 from utils.data_loader import load_data
 from utils.options_analyzer import get_options_chain, explain_greek
 
