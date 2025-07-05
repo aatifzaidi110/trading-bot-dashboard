@@ -145,3 +145,28 @@ class ComboStrategy:
 
     def get_performance_summary(self):
         return self.tracker.get_performance_summary()
+        
+        def adapt_parameters(self):
+        """
+        Automatically adjust confidence requirements based on win rate.
+        """
+        summary = self.tracker.get_performance_summary()
+        total = summary.get("total_trades", 0)
+        win_rate = summary.get("win_rate", 1)
+
+        if total < 10:
+            return  # Not enough data yet
+
+        # Tune threshold
+        if win_rate < 0.4:
+            self.rsi_threshold += 2
+            self.bollinger_std += 0.2
+            self.min_win_rate_threshold = min(0.5, self.min_win_rate_threshold + 0.05)
+            logger.warning(f"📉 Strategy underperforming. Raised RSI threshold and Bollinger STD.")
+
+        elif win_rate > 0.6:
+            self.rsi_threshold = max(10, self.rsi_threshold - 2)
+            self.bollinger_std = max(1.5, self.bollinger_std - 0.1)
+            self.min_win_rate_threshold = max(0.1, self.min_win_rate_threshold - 0.05)
+            logger.info(f"📈 Strategy improving. Loosened RSI and Bollinger for more entries.")
+
