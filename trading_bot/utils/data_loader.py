@@ -7,10 +7,15 @@ import yfinance as yf
 DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data')
 os.makedirs(DATA_DIR, exist_ok=True)
 
+
 def load_price_data(symbol, period="1y", interval="1d"):
+    """
+    Load price data for a single ticker.
+    Attempts to load from local disk first; falls back to yfinance if needed.
+    """
     file_path = os.path.join(DATA_DIR, f"{symbol}.csv")
 
-    # Try loading from disk (optional)
+    # Try loading from disk
     if os.path.exists(file_path):
         try:
             df = pd.read_csv(file_path, parse_dates=["Date"])
@@ -23,6 +28,7 @@ def load_price_data(symbol, period="1y", interval="1d"):
         except Exception as e:
             print(f"⚠️ Error reading local file for {symbol}: {e}")
 
+    # Fallback to yfinance
     try:
         df = yf.download(symbol, period=period, interval=interval)
         if df.empty:
@@ -36,8 +42,6 @@ def load_price_data(symbol, period="1y", interval="1d"):
             df.columns = df.columns.get_level_values(0)
 
         df.columns = df.columns.str.lower()
-
-        # Rename 'date' if present
         if "date" in df.columns:
             df.rename(columns={"date": "Date"}, inplace=True)
 
@@ -45,12 +49,34 @@ def load_price_data(symbol, period="1y", interval="1d"):
             print(f"⚠️ Skipping {symbol}: 'close' column missing from Yahoo.")
             return None
 
-        # Save to local file
+        # Save locally
         df.to_csv(file_path, index=False)
-
         df.set_index("Date", inplace=True)
         return df
 
     except Exception as e:
         print(f"⚠️ Failed to load {symbol} from yfinance: {e}")
         return None
+
+
+def load_data(filepath):
+    """
+    Load a CSV file manually from path (used in dashboard uploads etc.)
+    """
+    df = pd.read_csv(filepath)
+    df["Date"] = pd.to_datetime(df["Date"])
+    df.set_index("Date", inplace=True)
+    return df
+
+
+def load_all_price_data(tickers: list, period="1y", interval="1d") -> dict:
+    """
+    Load price data for a list of tickers.
+    Returns a dictionary: { 'AAPL': df, 'TSLA': df, ... }
+    """
+    data = {}
+    for symbol in tickers:
+        df = load_price_data(symbol, period, interval)
+        if df is not None:
+            data[symbol] = df
+    return data
