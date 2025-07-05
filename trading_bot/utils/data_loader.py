@@ -7,7 +7,7 @@ import yfinance as yf
 DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data')
 os.makedirs(DATA_DIR, exist_ok=True)
 
-def load_data(symbol, period="1y", interval="1d"):
+def load_price_data(symbol, period="1y", interval="1d"):
     file_path = os.path.join(DATA_DIR, f"{symbol}.csv")
 
     # Try loading from disk (optional)

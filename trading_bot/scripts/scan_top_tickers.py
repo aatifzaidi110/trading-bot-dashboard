@@ -1,65 +1,51 @@
-# scripts/scan_top_tickers.py
+# trading_bot/scripts/scan_top_tickers.py
 
 import os
+import json
+import argparse
 import pandas as pd
-from strategy.combo_strategy import ComboStrategy
-from utils.data_loader import load_data
-from utils.sentiment_helper import get_sentiment_score  # Placeholder
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+
 from datetime import datetime
+from trading_bot.utils.data_loader import load_price_data
+from trading_bot.utils.ticker_list import get_top_tickers
+from trading_bot.strategy.combo_strategy import ComboStrategy
 
-# ⚙️ Setup
-TOP_TICKERS = [
-    "AAPL", "MSFT", "TSLA", "AMZN", "NVDA", "GOOGL", "META", "NFLX", "AMD", "INTC",
-    "PYPL", "SHOP", "PLTR", "SNOW", "COIN", "BIDU", "CRWD", "UBER", "PDD", "DKNG",
-    "FSLR", "ROKU", "MELI", "DDOG", "SOUN", "RBLX", "LCID", "AFRM", "RIOT", "MARA",
-    "SOFI", "CVNA", "WBD", "NKLA", "UPST", "FUBO", "CHPT", "DNA", "IONQ", "BIGC"
-]  # You can expand this easily
-
-OUTPUT_FILE = "data/top_signals.csv"
+# Save to CSV
+OUTPUT_CSV = os.path.join("data", "top_signals.csv")
 os.makedirs("data", exist_ok=True)
 
-# 🔁 Loop through tickers
-results = []
+# Argument parser
+parser = argparse.ArgumentParser(description="📈 Scan top tickers for trading signals")
+parser.add_argument("--tickers", type=int, default=20, help="Limit number of tickers to scan")
+parser.add_argument("--output", type=str, default=OUTPUT_CSV, help="Path to save CSV")
+args = parser.parse_args()
 
-print(f"🔍 Scanning {len(TOP_TICKERS)} tickers...")
+tickers = get_top_tickers()[:args.tickers]
+print(f"🔍 Scanning {len(tickers)} tickers...")
 
-for symbol in TOP_TICKERS:
-    try:
-        df = load_data(symbol)
-        strategy = ComboStrategy(name=f"{symbol}_Combo")
-        df_signaled = strategy.generate_signals(df)
+signals = []
 
-        if df_signaled.empty:
-            continue
-
-        last_row = df_signaled.iloc[-1]
-        confidence = last_row.get("confidence_score", 0)
-        signal = last_row.get("Signal", "HOLD")
-        reason = last_row.get("Reason", "")
-        summary = strategy.get_performance_summary()
-        sentiment_score = get_sentiment_score(symbol)
-
-        results.append({
-            "Symbol": symbol,
-            "Signal": signal,
-            "Confidence": confidence,
-            "Win Rate": round(summary.get("win_rate", 0), 2),
-            "Sharpe": round(summary.get("Sharpe Ratio", 0), 2),
-            "Drawdown": round(summary.get("Max Drawdown (%)", 0), 2),
-            "Total Trades": summary.get("total_trades", 0),
-            "Sentiment": sentiment_score,
-            "Reason": reason,
-            "Last Price": df["close"].iloc[-1],
-            "Date": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-        })
-
-    except Exception as e:
-        print(f"⚠️ Error processing {symbol}: {e}")
+for symbol in tickers:
+    df = load_price_data(symbol, period="6mo")
+    if df is None or df.empty:
         continue
 
-# 🏆 Top 10 signals
-df_results = pd.DataFrame(results)
-df_results.sort_values(by=["Confidence", "Win Rate", "Sentiment"], ascending=False, inplace=True)
-df_results.head(10).to_csv(OUTPUT_FILE, index=False)
+    try:
+        strategy = ComboStrategy()
+        result = strategy.generate(df)
+        if result and result.get("signal") != "HOLD":
+            result.update({
+                "symbol": symbol,
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            })
+            signals.append(result)
+    except Exception as e:
+        print(f"❌ Error processing {symbol}: {e}")
 
-print(f"✅ Top signals saved to: {OUTPUT_FILE}")
+if signals:
+    pd.DataFrame(signals).to_csv(args.output, index=False)
+    print(f"✅ Top signals saved to: {args.output}")
+else:
+    print("⚠️ No signals generated.")

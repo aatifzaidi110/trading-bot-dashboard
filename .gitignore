@@ -1,0 +1,6 @@
+# .gitignore
+*.pyc
+__pycache__/
+.env
+data/*.csv
+trades/*.json
