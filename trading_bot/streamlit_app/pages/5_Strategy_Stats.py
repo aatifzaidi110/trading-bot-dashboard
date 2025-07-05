@@ -1,43 +1,64 @@
-# streamlit_app/pages/4_Strategy_Stats.py
+# streamlit_app/pages/5_Strategy_Stats.py
 
 import os
 import json
-import pandas as pd
 import streamlit as st
+import pandas as pd
 
-st.set_page_config(page_title="📊 Strategy Stats", layout="wide")
+from utils.performance_tracker import save_performance_summary
+
+st.set_page_config(page_title="📊 Strategy Overview", layout="wide")
 st.title("📊 Strategy Performance Summary")
 
-TRADE_LOG = "trades/trade_log.json"
+TRADE_JSON = "trades/trade_log.json"
 
-if os.path.exists(TRADE_LOG):
+if not os.path.exists(TRADE_JSON):
+    st.warning("No trade log found.")
+    st.stop()
+
+with open(TRADE_JSON) as f:
     try:
-        with open(TRADE_LOG) as f:
-            content = f.read().strip()
-            trades = json.loads(content) if content else []
+        trades = json.load(f)
     except json.JSONDecodeError:
-        trades = []
-        st.warning(⚠️ Could not parse trade log.")
+        st.error("Failed to load JSON.")
+        st.stop()
 
-    if trades:
-        df = pd.DataFrame(trades)
+if not trades:
+    st.info("No trades recorded yet.")
+    st.stop()
 
-        df["confidence"] = pd.to_numeric(df["confidence"], errors="coerce")
-        df["entry"] = pd.to_numeric(df["entry"], errors="coerce")
-        df["exit"] = pd.to_numeric(df["exit"], errors="coerce")
+# Create DataFrame
+df = pd.DataFrame(trades)
+df["timestamp"] = pd.to_datetime(df["timestamp"])
+df["date"] = df["timestamp"].dt.date
 
-        df["profit_pct"] = ((df["exit"] - df["entry"]) / df["entry"]) * 100
+# === Filters ===
+col1, col2, col3 = st.columns(3)
 
-        summary = df.groupby(["symbol", "status"]).size().unstack(fill_value=0)
-        summary["Total Trades"] = summary.sum(axis=1)
-        summary["Win Rate (%)"] = (summary.get("WIN", 0) / summary["Total Trades"]) * 100
+with col1:
+    date_filter = st.date_input("📅 Filter by Date", [])
+with col2:
+    signal_filter = st.multiselect("🎯 Filter by Signal", df["signal"].unique())
+with col3:
+    ticker_filter = st.multiselect("💹 Filter by Ticker", df["symbol"].unique())
 
-        st.dataframe(summary.sort_values("Win Rate (%)", ascending=False), use_container_width=True)
+# === Apply filters ===
+if date_filter:
+    df = df[df["date"].isin(date_filter)]
+if signal_filter:
+    df = df[df["signal"].isin(signal_filter)]
+if ticker_filter:
+    df = df[df["symbol"].isin(ticker_filter)]
 
-        st.markdown("---")
-        st.subheader("📈 Profit Distribution")
-        st.bar_chart(df.groupby("symbol")["profit_pct"].mean().sort_values(ascending=False))
-    else:
-        st.info("📭 No trades found.")
-else:
-    st.warning("🛑 trade_log.json not found. Run a scan or add trades first.")
+# === Summary Metrics ===
+col1, col2, col3 = st.columns(3)
+col1.metric("Total Trades", len(df))
+col2.metric("Win %", f"{(df['result'] == 'WIN').mean() * 100:.1f}%" if "result" in df else "N/A")
+col3.metric("Avg Confidence", f"{df['confidence'].mean():.2f}" if "confidence" in df else "N/A")
+
+# === Table ===
+st.dataframe(df.sort_values("timestamp", ascending=False), use_container_width=True)
+
+# === Export ===
+if st.download_button("⬇️ Export CSV", df.to_csv(index=False).encode(), file_name="strategy_summary.csv"):
+    st.success("Exported successfully.")
