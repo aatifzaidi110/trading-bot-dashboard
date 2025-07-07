@@ -4,7 +4,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-def plot_trade_history(df: pd.DataFrame):
+def render_trade_history(df: pd.DataFrame):
     if df.empty or "Signal" not in df.columns:
         st.warning("No signal data to plot.")
         return
