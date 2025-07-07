@@ -1,0 +1,42 @@
+{
+    "AAPL": {
+        "Start": "2022-01-03",
+        "End": "2025-05-29",
+        "Final Value": 10000.0,
+        "Return (%)": 0.0,
+        "Sharpe Ratio": NaN,
+        "Max Drawdown (%)": 0.0
+    },
+    "MSFT": {
+        "Start": "2022-01-03",
+        "End": "2025-05-29",
+        "Final Value": 10000.0,
+        "Return (%)": 0.0,
+        "Sharpe Ratio": NaN,
+        "Max Drawdown (%)": 0.0
+    },
+    "TSLA": {
+        "Start": "2022-01-03",
+        "End": "2025-05-29",
+        "Final Value": 10000.0,
+        "Return (%)": 0.0,
+        "Sharpe Ratio": NaN,
+        "Max Drawdown (%)": 0.0
+    },
+    "AMZN": {
+        "Start": "2022-01-03",
+        "End": "2025-05-29",
+        "Final Value": 10000.0,
+        "Return (%)": 0.0,
+        "Sharpe Ratio": NaN,
+        "Max Drawdown (%)": 0.0
+    },
+    "SPY": {
+        "Start": "2022-01-03",
+        "End": "2025-05-29",
+        "Final Value": 10000.0,
+        "Return (%)": 0.0,
+        "Sharpe Ratio": NaN,
+        "Max Drawdown (%)": 0.0
+    }
+}

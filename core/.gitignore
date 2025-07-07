@@ -1,0 +1,13 @@
+# Ignore system
+__pycache__/
+*.pyc
+.env
+.vscode/
+.idea/
+
+# Ignore data logs
+results/
+trades/
+
+# Streamlit cloud
+.streamlit/secrets.toml
