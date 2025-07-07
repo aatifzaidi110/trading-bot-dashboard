@@ -1,13 +1,13 @@
 # strategy/strategy_switcher.py
 
 from config import settings
-from strategy.rsi_strategy import RSIStrategy
-from strategy.macd_strategy import MACDStrategy
-from strategy.bollinger_strategy import BollingerStrategy
-from strategy.ema200_trend import EMA200TrendStrategy
-from strategy.combo_strategy import ComboStrategy
-from strategy.ma_crossover_strategy import MACrossoverStrategy
-from strategy.ensemble_strategy import EnsembleStrategy
+from core.strategy.rsi_strategy import RSIStrategy
+from core.strategy.macd_strategy import MACDStrategy
+from core.strategy.bollinger_strategy import BollingerStrategy
+from core.strategy.ema200_trend import EMA200TrendStrategy
+from core.strategy.combo_strategy import ComboStrategy
+from core.strategy.ma_crossover_strategy import MACrossoverStrategy
+from core.strategy.ensemble_strategy import EnsembleStrategy
 
 from utils.strategy_selector import select_best_strategy
 

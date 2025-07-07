@@ -3,7 +3,7 @@ from datetime import datetime
 import csv
 import os
 from config import settings
-from utils.logger import setup_logger
+from core.utils.logger import setup_logger
 
 logger = setup_logger("OrderManager")
 

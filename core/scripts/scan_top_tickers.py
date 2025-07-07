@@ -8,9 +8,9 @@ import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 from datetime import datetime
-from trading_bot.utils.data_loader import load_price_data
-from trading_bot.utils.ticker_list import get_top_tickers
-from trading_bot.strategy.combo_strategy import ComboStrategy
+from core.utils.data_loader import load_price_data
+from core.utils.ticker_list import get_top_tickers
+from core.strategy.combo_strategy import ComboStrategy
 
 # Save to CSV
 OUTPUT_CSV = os.path.join("data", "top_signals.csv")

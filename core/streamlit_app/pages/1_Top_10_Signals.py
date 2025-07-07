@@ -11,8 +11,8 @@ import yfinance as yf
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "trading_bot"))
 sys.path.append(ROOT)
 
-from utils.data_loader import load_data
-from strategy.combo_strategy import ComboStrategy
+from core.utils.data_loader import load_data
+from core.strategy.combo_strategy import ComboStrategy
 
 # === Config ===
 st.set_page_config(page_title="🏆 Top 10 Signals", layout="wide")

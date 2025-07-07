@@ -15,7 +15,7 @@ from core.logger.trade_logger import log_trade
 from core.execution import order_manager
 from core.data import fetch_data
 from core.strategy.strategy_switcher import get_strategy_by_name
-from backtest.backtester import run_backtest
+from core.backtest.backtester import run_backtest
 
 # ------------------ Logging Setup ------------------
 

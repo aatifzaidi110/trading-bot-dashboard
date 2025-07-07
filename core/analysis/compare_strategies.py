@@ -2,12 +2,12 @@ from config import settings
 from data import fetch_data
 from backtest import backtester
 
-from strategy.sma_crossover import SMACrossoverStrategy
-from strategy.rsi_strategy import RSIStrategy
-from strategy.macd_strategy import MACDStrategy
-from strategy.bollinger_strategy import BollingerStrategy
-from strategy.ema200_trend import EMA200Strategy
-from strategy.combo_strategy import ComboStrategy
+from core.strategy.sma_crossover import SMACrossoverStrategy
+from core.strategy.rsi_strategy import RSIStrategy
+from core.strategy.macd_strategy import MACDStrategy
+from core.strategy.bollinger_strategy import BollingerStrategy
+from core.strategy.ema200_trend import EMA200Strategy
+from core.strategy.combo_strategy import ComboStrategy
 
 def compare_strategies(symbol):
     df = fetch_data.get_data(symbol, settings.START_DATE, settings.END_DATE, settings.TIMEFRAME)

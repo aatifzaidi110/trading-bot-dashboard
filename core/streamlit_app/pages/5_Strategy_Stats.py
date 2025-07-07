@@ -5,7 +5,7 @@ import json
 import streamlit as st
 import pandas as pd
 
-from utils.performance_tracker import save_performance_summary
+from core.utils.performance_tracker import save_performance_summary
 
 st.set_page_config(page_title="📊 Strategy Overview", layout="wide")
 st.title("📊 Strategy Performance Summary")

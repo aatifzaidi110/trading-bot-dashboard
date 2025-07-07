@@ -14,18 +14,18 @@ if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)  # ✅ insert at index 0, not append
 
 # === Core Imports ===
-from strategy.combo_strategy import ComboStrategy
-from utils.data_loader import load_data
-from utils.equity_curve import load_equity_curves
-from utils.options_analyzer import get_options_chain
-from models.model_runner import enhance_with_ml  # ML stub
+from core.strategy.combo_strategy import ComboStrategy
+from core.utils.data_loader import load_data
+from core.utils.equity_curve import load_equity_curves
+from core.utils.options_analyzer import get_options_chain
+from core.models.model_runner import enhance_with_ml  # ML stub
 
 # === UI Components ===
-from streamlit_app.components.signal_table import render_signals
-from streamlit_app.components.strategy_metrics import render_strategy_metrics
-from streamlit_app.components.trade_plot import render_trade_history
-from streamlit_app.components.winrate_chart import render_winrate_chart
-from streamlit_app.components.winrate_chart import plot_ml_vs_actual
+from core.streamlit_app.components.signal_table import render_signals
+from core.streamlit_app.components.strategy_metrics import render_strategy_metrics
+from core.streamlit_app.components.trade_plot import render_trade_history
+from core.streamlit_app.components.winrate_chart import render_winrate_chart
+from core.treamlit_app.components.winrate_chart import plot_ml_vs_actual
 ...
 plot_ml_vs_actual(df_signals)
 

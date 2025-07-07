@@ -2,14 +2,14 @@
 
 from config import settings
 
-from strategy.rsi_strategy import RSIStrategy
-from strategy.macd_strategy import MACDStrategy
-from strategy.sma_crossover import SMACrossoverStrategy
-from strategy.bollinger_strategy import BollingerStrategy
-from strategy.combo_strategy import ComboStrategy
-from strategy.ensemble_strategy import EnsembleStrategy
-from strategy.ema200_trend import EMA200TrendStrategy
-from strategy.ma_crossover_strategy import MACrossoverStrategy
+from core.strategy.rsi_strategy import RSIStrategy
+from core.strategy.macd_strategy import MACDStrategy
+from core.strategy.sma_crossover import SMACrossoverStrategy
+from core.strategy.bollinger_strategy import BollingerStrategy
+from core.strategy.combo_strategy import ComboStrategy
+from core.strategy.ensemble_strategy import EnsembleStrategy
+from core.strategy.ema200_trend import EMA200TrendStrategy
+from core.strategy.ma_crossover_strategy import MACrossoverStrategy
 
 def get_strategy_by_name(name: str):
     """

@@ -2,8 +2,8 @@
 
 import pandas as pd
 import logging
-from logger.trade_logger import log_trade
-from utils.performance_tracker import PerformanceTracker
+from core.logger.trade_logger import log_trade
+from core.utils.performance_tracker import PerformanceTracker
 
 logger = logging.getLogger(__name__)
 

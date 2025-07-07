@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import plotly.graph_objects as go
-from strategy.combo_strategy import ComboStrategy
+from core.strategy.combo_strategy import ComboStrategy
 from data.fetch_data import get_data
 
 # Inputs

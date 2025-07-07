@@ -9,12 +9,12 @@ import pandas as pd
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "trading_bot"))
 sys.path.append(ROOT)
 
-from utils.data_loader import load_data
-from strategy.combo_strategy import ComboStrategy
+from core.utils.data_loader import load_data
+from core.strategy.combo_strategy import ComboStrategy
 
-from utils.data_loader import load_data
-from strategy.combo_strategy import ComboStrategy
-from utils.options_analyzer import get_options_chain, explain_greek
+from core.utils.data_loader import load_data
+from core.strategy.combo_strategy import ComboStrategy
+from core.utils.options_analyzer import get_options_chain, explain_greek
 
 st.set_page_config(page_title="💼 Options Analysis", layout="wide")
 st.title("💼 Options Chain & Spread Strategy")

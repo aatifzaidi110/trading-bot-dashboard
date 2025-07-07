@@ -1,8 +1,8 @@
 # scripts/batch_export_combo_dashboard.py
 
 import os
-from strategy.combo_strategy import ComboStrategy
-from utils.save_results import save_strategy_results
+from core.trategy.combo_strategy import ComboStrategy
+from core.utils.save_results import save_strategy_results
 from data.data_loader import load_data  # Must exist and return a DataFrame with OHLCV
 import logging
 

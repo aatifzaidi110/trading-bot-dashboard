@@ -1,12 +1,12 @@
 import logging
-from strategy.rsi_strategy import RSIStrategy
-from strategy.macd_strategy import MACDStrategy
-from strategy.ema200_trend import EMA200TrendStrategy
-from strategy.bollinger_strategy import BollingerStrategy
-from strategy.combo_strategy import ComboStrategy
-from strategy.sma_crossover_strategy import SMACrossoverStrategy
-from utils.performance_tracker import PerformanceTracker
-from logger.trade_logger import log_trade
+from core.strategy.rsi_strategy import RSIStrategy
+from core.strategy.macd_strategy import MACDStrategy
+from core.strategy.ema200_trend import EMA200TrendStrategy
+from core.strategy.bollinger_strategy import BollingerStrategy
+from core.strategy.combo_strategy import ComboStrategy
+from core.strategy.sma_crossover_strategy import SMACrossoverStrategy
+from core.utils.performance_tracker import PerformanceTracker
+from core.logger.trade_logger import log_trade
 
 logger = logging.getLogger(__name__)
 
