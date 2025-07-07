@@ -10,6 +10,12 @@ from datetime import datetime
 # === PATH SETUP ===
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "core")))
 
+# Add root directory to path for module resolution
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
+
+from core.strategy.combo_strategy import ComboStrategy
+# ... your other imports
+
 from core.strategy.combo_strategy import ComboStrategy
 from core.utils.data_loader import load_data
 from core.utils.equity_curve import load_equity_curves
