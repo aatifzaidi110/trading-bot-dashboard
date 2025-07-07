@@ -2,7 +2,7 @@
 
 import pytest
 from datetime import datetime
-from trading_bot.utils.performance_tracker import PerformanceTracker
+from core.utils.performance_tracker import PerformanceTracker
 
 def test_performance_summary():
     tracker = PerformanceTracker("TestStrategy")

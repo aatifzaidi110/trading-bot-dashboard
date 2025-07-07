@@ -2,7 +2,7 @@
 
 import os
 import tempfile
-from trading_bot.utils.ticker_list import get_top_tickers
+from core.utils.ticker_list import get_top_tickers
 
 def test_get_top_tickers_env(monkeypatch):
     monkeypatch.setenv("TICKER_LIST", "AAPL,GOOGL,MSFT")
@@ -16,7 +16,7 @@ def test_get_top_tickers_file(monkeypatch):
         config_path = os.path.join(temp_dir, "top_tickers.txt")
         with open(config_path, "w") as f:
             f.write("TSLA\nNVDA\n")
-        monkeypatch.setattr("trading_bot.utils.ticker_list.CONFIG_FILE", config_path)
+        monkeypatch.setattr("core.utils.ticker_list.CONFIG_FILE", config_path)
         tickers = get_top_tickers()
         assert tickers == ["TSLA", "NVDA"]
 

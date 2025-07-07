@@ -1,7 +1,7 @@
 # tests/test_indicators.py
 
 import pandas as pd
-from trading_bot.indicators.indicators  import (
+from core.indicators.indicators  import (
     calculate_rsi,
     calculate_macd,
     calculate_bollinger_bands,

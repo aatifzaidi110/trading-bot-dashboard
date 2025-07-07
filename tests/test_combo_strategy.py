@@ -2,7 +2,7 @@
 
 import pandas as pd
 import pytest
-from trading_bot.strategy.combo_strategy import ComboStrategy
+from core.strategy.combo_strategy import ComboStrategy
 
 
 @pytest.fixture

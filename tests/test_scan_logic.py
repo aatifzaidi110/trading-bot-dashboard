@@ -1,8 +1,8 @@
 # tests/test_scan_logic.py
 
 import pytest
-from trading_bot.strategy.combo_strategy import ComboStrategy
-from trading_bot.utils.data_loader import load_data
+from core.strategy.combo_strategy import ComboStrategy
+from core.utils.data_loader import load_data
 
 def test_combo_strategy_on_sample_ticker():
     symbol = "AAPL"
