@@ -9,7 +9,9 @@ from datetime import datetime
 
 # === PATH SETUP ===
 # Add root directory to path for module resolution
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)  # ✅ insert at index 0, not append
 
 # === Core Imports ===
 from core.strategy.combo_strategy import ComboStrategy
