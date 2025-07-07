@@ -40,7 +40,7 @@ st_autorefresh = st.empty()
 if st_autorefresh.button("🔄 Refresh Now"):
     st.experimental_rerun()
 st_autorefresh.empty()
-st.experimental_set_query_params(refresh=str(time.time()))
+st.query_params = {"refresh": str(time.time())}
 
 # === Load JSON safely ===
 def safe_json(path, fallback=[]):
