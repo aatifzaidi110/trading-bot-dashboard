@@ -27,9 +27,9 @@ from core.streamlit_app.components.winrate_chart import render_winrate_chart
 from core.streamlit_app.components.winrate_chart import plot_ml_vs_actual
 
 # === Constants & Setup ===
-SCAN_RESULTS = "results/scan_results.json"
-TRADE_LOG = "trades/trade_log.json"
-PERF_LOG = "logs/performance_log.json"
+SCAN_RESULTS = "core/results/scan_results.json"
+TRADE_LOG = "core/trades/trade_log.json"
+PERF_LOG = "core/logs/performance_log.json"
 os.makedirs("trades", exist_ok=True)
 
 # === Streamlit Setup ===
@@ -45,9 +45,14 @@ st.query_params = {"refresh": str(time.time())}
 # === Load JSON safely ===
 def safe_json(path, fallback=[]):
     try:
+        st.write(f"🔍 Reading JSON: `{path}`")  # debug info
         with open(path) as f:
-            return json.load(f)
-    except:
+            data = json.load(f)
+            st.write("✅ JSON loaded. Sample:")
+            st.json(data[:1] if isinstance(data, list) else data)
+            return data
+    except Exception as e:
+        st.error(f"❌ Failed to load {path}: {e}")
         return fallback
 
 # === Load Data ===
