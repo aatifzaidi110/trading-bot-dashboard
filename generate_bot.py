@@ -2,10 +2,11 @@ import os
 
 base_dir = "trading_bot"
 folders = [
-    "config", "data", "execution", "strategy", "backtest", "analysis", "logs/backtests", "logs/trades", "utils"
+    "config", "data", "execution", "strategy", "backtest", "analysis",
+    "logs/backtests", "logs/trades", "utils"
 ]
 
-# Create folders
+# Create folder structure
 for folder in folders:
     os.makedirs(os.path.join(base_dir, folder), exist_ok=True)
 
@@ -48,7 +49,6 @@ def setup_logger(name='bot_logger'):
 with open(os.path.join(base_dir, "utils", "logger.py"), "w") as f:
     f.write(logger_py)
 
-# Part 2: main & data modules - this will create main.py for live + backtest flow
 # ──────────────────────────────────────────────────────
 # main.py
 main_py = """\
@@ -134,8 +134,6 @@ def get_data(symbol, start_date, end_date, timeframe):
 
 with open(os.path.join(base_dir, "data", "fetch_data.py"), "w") as f:
     f.write(fetch_data_py)
-
-# Part 3: Order Execution & Backtesting this will create Alpaca trade execution logging to cvs and backtesting
 
 # ──────────────────────────────────────────────────────
 # execution/order_manager.py
@@ -260,8 +258,6 @@ def run_backtest(df: pd.DataFrame, strategy_obj, symbol=None, save_csv=True):
 with open(os.path.join(base_dir, "backtest", "backtester.py"), "w") as f:
     f.write(backtester_py)
 
-# Part 4: Strategies + Comparison + Requirements
-
 # ──────────────────────────────────────────────────────
 # strategy/sma_crossover.py
 sma_py = """\
@@ -287,232 +283,7 @@ class SMACrossoverStrategy:
 with open(os.path.join(base_dir, "strategy", "sma_crossover.py"), "w") as f:
     f.write(sma_py)
 
-# RSI Strategy
-rsi_py = """\
-import pandas as pd
-
-class RSIStrategy:
-    def __init__(self, period=14, lower=30, upper=70):
-        self.period = period
-        self.lower = lower
-        self.upper = upper
-
-    def generate_signal(self, df: pd.DataFrame):
-        df = df.copy()
-        delta = df['close'].diff()
-        gain = delta.clip(lower=0)
-        loss = -delta.clip(upper=0)
-        avg_gain = gain.rolling(window=self.period).mean()
-        avg_loss = loss.rolling(window=self.period).mean()
-        rs = avg_gain / avg_loss
-        df["RSI"] = 100 - (100 / (1 + rs))
-
-        if df["RSI"].iloc[-1] < self.lower:
-            return "BUY"
-        elif df["RSI"].iloc[-1] > self.upper:
-            return "SELL"
-        return "HOLD"
-"""
-
-with open(os.path.join(base_dir, "strategy", "rsi_strategy.py"), "w") as f:
-    f.write(rsi_py)
-
-# MACD Strategy
-macd_py = """\
-import pandas as pd
-
-class MACDStrategy:
-    def __init__(self, fast=12, slow=26, signal=9):
-        self.fast = fast
-        self.slow = slow
-        self.signal = signal
-
-    def generate_signal(self, df: pd.DataFrame):
-        df = df.copy()
-        df["EMA_fast"] = df["close"].ewm(span=self.fast, adjust=False).mean()
-        df["EMA_slow"] = df["close"].ewm(span=self.slow, adjust=False).mean()
-        df["MACD"] = df["EMA_fast"] - df["EMA_slow"]
-        df["Signal_Line"] = df["MACD"].ewm(span=self.signal, adjust=False).mean()
-
-        if df["MACD"].iloc[-2] < df["Signal_Line"].iloc[-2] and df["MACD"].iloc[-1] > df["Signal_Line"].iloc[-1]:
-            return "BUY"
-        elif df["MACD"].iloc[-2] > df["Signal_Line"].iloc[-2] and df["MACD"].iloc[-1] < df["Signal_Line"].iloc[-1]:
-            return "SELL"
-        return "HOLD"
-"""
-
-with open(os.path.join(base_dir, "strategy", "macd_strategy.py"), "w") as f:
-    f.write(macd_py)
-
-# Bollinger Strategy
-bollinger_py = """\
-import pandas as pd
-
-class BollingerStrategy:
-    def __init__(self, window=20, num_std=2):
-        self.window = window
-        self.num_std = num_std
-
-    def generate_signal(self, df: pd.DataFrame):
-        df = df.copy()
-        rolling_mean = df["close"].rolling(self.window).mean()
-        rolling_std = df["close"].rolling(self.window).std()
-        df["Upper"] = rolling_mean + (self.num_std * rolling_std)
-        df["Lower"] = rolling_mean - (self.num_std * rolling_std)
-
-        price = df["close"].iloc[-1]
-        if price < df["Lower"].iloc[-1]:
-            return "BUY"
-        elif price > df["Upper"].iloc[-1]:
-            return "SELL"
-        return "HOLD"
-"""
-
-with open(os.path.join(base_dir, "strategy", "bollinger_strategy.py"), "w") as f:
-    f.write(bollinger_py)
-
-# EMA200 Strategy
-ema_py = """\
-import pandas as pd
-
-class EMA200Strategy:
-    def __init__(self):
-        pass
-
-    def generate_signal(self, df: pd.DataFrame):
-        df = df.copy()
-        df["EMA200"] = df["close"].ewm(span=200, adjust=False).mean()
-        price = df["close"].iloc[-1]
-        ema = df["EMA200"].iloc[-1]
-
-        if price > ema:
-            return "BUY"
-        elif price < ema:
-            return "SELL"
-        return "HOLD"
-"""
-
-with open(os.path.join(base_dir, "strategy", "ema200_trend.py"), "w") as f:
-    f.write(ema_py)
-
-# Combo Strategy
-combo_py = """\
-import pandas as pd
-
-class ComboStrategy:
-    def __init__(self, sma_window=50, rsi_period=14, rsi_buy=35, rsi_sell=65):
-        self.sma_window = sma_window
-        self.rsi_period = rsi_period
-        self.rsi_buy = rsi_buy
-        self.rsi_sell = rsi_sell
-
-    def generate_signal(self, df: pd.DataFrame):
-        df = df.copy()
-        df["SMA"] = df["close"].rolling(window=self.sma_window).mean()
-        price = df["close"].iloc[-1]
-        sma = df["SMA"].iloc[-1]
-
-        delta = df['close'].diff()
-        gain = delta.clip(lower=0)
-        loss = -delta.clip(upper=0)
-        avg_gain = gain.rolling(window=self.rsi_period).mean()
-        avg_loss = loss.rolling(window=self.rsi_period).mean()
-        rs = avg_gain / avg_loss
-        df["RSI"] = 100 - (100 / (1 + rs))
-        rsi = df["RSI"].iloc[-1]
-
-        if price > sma and rsi < self.rsi_buy:
-            return "BUY"
-        elif price < sma and rsi > self.rsi_sell:
-            return "SELL"
-        return "HOLD"
-"""
-
-with open(os.path.join(base_dir, "strategy", "combo_strategy.py"), "w") as f:
-    f.write(combo_py)
-
-# Ensemble Strategy
-ensemble_py = """\
-from strategy.rsi_strategy import RSIStrategy
-from strategy.sma_crossover import SMACrossoverStrategy
-from strategy.macd_strategy import MACDStrategy
-
-class EnsembleStrategy:
-    def __init__(self):
-        self.strategies = [
-            RSIStrategy(14, 30, 70),
-            SMACrossoverStrategy(20, 50),
-            MACDStrategy()
-        ]
-
-    def generate_signal(self, df):
-        votes = {"BUY": 0, "SELL": 0, "HOLD": 0}
-        for strat in self.strategies:
-            signal = strat.generate_signal(df)
-            votes[signal] += 1
-
-        if votes["BUY"] >= 2:
-            return "BUY"
-        elif votes["SELL"] >= 2:
-            return "SELL"
-        else:
-            return "HOLD"
-"""
-
-with open(os.path.join(base_dir, "strategy", "ensemble_strategy.py"), "w") as f:
-    f.write(ensemble_py)
-
-# Compare script
-compare_py = """\
-from config import settings
-from data import fetch_data
-from backtest import backtester
-
-from strategy.sma_crossover import SMACrossoverStrategy
-from strategy.rsi_strategy import RSIStrategy
-from strategy.macd_strategy import MACDStrategy
-from strategy.bollinger_strategy import BollingerStrategy
-from strategy.ema200_trend import EMA200Strategy
-from strategy.combo_strategy import ComboStrategy
-
-def compare_strategies(symbol):
-    df = fetch_data.get_data(symbol, settings.START_DATE, settings.END_DATE, settings.TIMEFRAME)
-    if df is None or df.empty:
-        print(f"No data for {symbol}")
-        return
-
-    strategies = {
-        "SMA_Crossover": SMACrossoverStrategy(20, 50),
-        "RSI": RSIStrategy(14, 30, 70),
-        "MACD": MACDStrategy(),
-        "Bollinger": BollingerStrategy(),
-        "EMA200": EMA200Strategy(),
-        "Combo": ComboStrategy()
-    }
-
-    results = []
-    for name, strategy in strategies.items():
-        result = backtester.run_backtest(df, strategy, symbol=symbol, save_csv=False)
-        result["Strategy"] = name
-        results.append(result)
-
-    print(f"\\nBacktest Summary for {symbol}:\\n")
-    print("{:<15} {:<12} {:<12} {:<12} {:<14} {:<18}".format(
-        "Strategy", "Final Value", "Return (%)", "Sharpe", "Max Drawdown", "Period"
-    ))
-    for r in results:
-        print("{:<15} ${:<11} {:<12} {:<12} {:<14} {} to {}".format(
-            r["Strategy"], r["Final Value"], r["Return (%)"], r["Sharpe Ratio"],
-            f"{r['Max Drawdown (%)']}%", r["Start"], r["End"]
-        ))
-
-if __name__ == "__main__":
-    compare_strategies("AAPL")
-"""
-
-with open(os.path.join(base_dir, "analysis", "compare_strategies.py"), "w") as f:
-    f.write(compare_py)
-
+# ──────────────────────────────────────────────────────
 # requirements.txt
 reqs = """\
 pandas
@@ -522,3 +293,5 @@ requests
 
 with open(os.path.join(base_dir, "requirements.txt"), "w") as f:
     f.write(reqs)
+
+print("✅ Project structure generated successfully.")

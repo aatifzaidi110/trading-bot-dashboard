@@ -7,7 +7,6 @@ import yfinance as yf
 DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data')
 os.makedirs(DATA_DIR, exist_ok=True)
 
-
 def load_data(symbol, period="1y", interval="1d"):
     """
     Load price data for a single ticker from disk or yfinance.
@@ -56,6 +55,11 @@ def load_data(symbol, period="1y", interval="1d"):
     except Exception as e:
         print(f"⚠️ Failed to load {symbol} from yfinance: {e}")
         return None
+
+
+# ✅ Alias to fix broken imports
+def load_price_data(symbol, period="1y", interval="1d"):
+    return load_data(symbol, period, interval)
 
 
 def load_csv(filepath):
