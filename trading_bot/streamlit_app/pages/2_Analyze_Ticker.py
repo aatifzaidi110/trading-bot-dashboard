@@ -6,12 +6,18 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import yfinance as yf
+import sys
+
 from datetime import datetime
 
 # === Add root for imports
-import sys
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-sys.path.append(ROOT_DIR)
+
+# === Path Setup ===
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "trading_bot"))
+sys.path.append(ROOT)
+
+from utils.data_loader import load_data
+from strategy.combo_strategy import ComboStrategy
 
 from strategy.combo_strategy import ComboStrategy
 from utils.data_loader import load_data

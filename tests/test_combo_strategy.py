@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 from trading_bot.strategy.combo_strategy import ComboStrategy
 
+
 @pytest.fixture
 def sample_price_data():
     """
@@ -40,3 +41,12 @@ def test_adapt_parameters_safely():
     strategy.adapt_parameters()
     
     assert strategy.enabled is False or isinstance(strategy.rsi_threshold, int)
+
+def test_strategy_generates_signals():
+    data = pd.DataFrame({
+        "Date": pd.date_range(start="2024-01-01", periods=100),
+        "close": [100 + i for i in range(100)]
+    })
+    strategy = ComboStrategy()
+    signals = strategy.generate_signals(data)
+    assert not signals.empty

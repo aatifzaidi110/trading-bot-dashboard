@@ -94,3 +94,25 @@ st.download_button(
     file_name="strategy_metrics_filtered.csv",
     mime="text/csv"
 )
+# === Confidence Over Time ===
+st.subheader("📉 Confidence Over Time")
+
+conf_time = df[["timestamp", "confidence"]].dropna()
+conf_time = conf_time.set_index("timestamp").resample("D").mean().dropna()
+
+fig_conf_time = px.line(conf_time, y="confidence", title="Daily Avg Confidence")
+st.plotly_chart(fig_conf_time, use_container_width=True)
+
+# === Win/Loss Trend Over Time ===
+st.subheader("📆 Win/Loss Daily Trend")
+
+df["count"] = 1
+freq = st.radio("🕒 Trend Frequency", ["Daily", "Weekly"], horizontal=True)
+resample_freq = "W" if freq == "Weekly" else "D"
+
+trend = df.groupby([pd.Grouper(key="timestamp", freq=resample_freq), "status"])["count"].sum().unstack().fillna(0)
+trend = trend.rolling(2).mean()  # Smooth
+
+fig_trend = px.line(trend, title="Daily Win/Loss Trend (3-day SMA)")
+st.plotly_chart(fig_trend, use_container_width=True)
+

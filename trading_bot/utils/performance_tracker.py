@@ -1,6 +1,12 @@
 # utils/performance_tracker.py
 
+__all__ = ["PerformanceTracker", "save_performance_summary"]
+
 class PerformanceTracker:
+    """
+    Tracks trade outcomes and performance stats.
+    Used to dynamically adjust strategy logic based on results.
+    """
     def __init__(self, strategy_name=""):
         self.strategy_name = strategy_name
         self.reset()
@@ -12,9 +18,7 @@ class PerformanceTracker:
         self.trade_history = []
 
     def record_trade(self, result, pnl=0):
-        # Force uppercase match for consistency
         result = result.upper()
-
         if result == "WIN":
             self.wins += 1
         elif result == "LOSS":
@@ -36,7 +40,6 @@ class PerformanceTracker:
             "Return (%)": round(self.total_return, 2)
         }
 
-# Optional export helper
 def save_performance_summary(summary, path):
     import json, os
     os.makedirs(os.path.dirname(path), exist_ok=True)

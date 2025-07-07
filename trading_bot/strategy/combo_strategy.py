@@ -4,7 +4,7 @@ import pandas as pd
 import logging
 from trading_bot.utils.performance_tracker import PerformanceTracker
 from trading_bot.logger.trade_logger import log_trade
-from indicators.indicators import (
+from trading_bot.indicators.indicators import (
     calculate_rsi,
     calculate_macd,
     calculate_bollinger_bands,
@@ -130,23 +130,6 @@ class ComboStrategy:
         return df_signals["Signal"].iloc[-1] if not df_signals.empty else "HOLD"
 
     def adapt_parameters(self):
-        summary = self.tracker.get_performance_summary()
-        if summary.get("total_trades", 0) < 10:
-            return
-
-        win_rate = summary.get("win_rate", 1)
-        if win_rate < self.min_win_rate_threshold:
-            logger.warning(f"⚠️ Pausing {self.name} due to low win rate = {win_rate:.2f}")
-            self.enabled = False
-        elif win_rate > 0.6:
-            self.rsi_threshold = max(10, self.rsi_threshold - 2)
-            self.bollinger_std = max(1.5, self.bollinger_std - 0.1)
-            logger.info(f"🔁 Adjusted parameters: rsi={self.rsi_threshold}, boll_std={self.bollinger_std:.2f}")
-
-    def get_performance_summary(self):
-        return self.tracker.get_performance_summary()
-        
-        def adapt_parameters(self):
         """
         Automatically adjust confidence requirements based on win rate.
         """
@@ -170,3 +153,5 @@ class ComboStrategy:
             self.min_win_rate_threshold = max(0.1, self.min_win_rate_threshold - 0.05)
             logger.info(f"📈 Strategy improving. Loosened RSI and Bollinger for more entries.")
 
+    def get_performance_summary(self):
+        return self.tracker.get_performance_summary()

@@ -1,6 +1,8 @@
+# tests/test_scan_logic.py
+
 import pytest
-from strategy.combo_strategy import ComboStrategy
-from utils.data_loader import load_data
+from trading_bot.strategy.combo_strategy import ComboStrategy
+from trading_bot.utils.data_loader import load_data
 
 def test_combo_strategy_on_sample_ticker():
     symbol = "AAPL"
@@ -8,9 +10,13 @@ def test_combo_strategy_on_sample_ticker():
     assert df is not None and not df.empty, "Data should be loaded."
 
     strategy = ComboStrategy()
-    result = strategy.evaluate(df)
+    result_df = strategy.generate_signals(df)
 
-    assert isinstance(result, dict)
-    assert "signal" in result
-    assert "confidence" in result
-    assert 0 <= result["confidence"] <= 5
+    assert not result_df.empty
+    assert "Signal" in result_df.columns
+    assert "Confidence" in result_df.columns
+
+    # Check last signal value is valid
+    last_row = result_df.iloc[-1]
+    assert last_row["Signal"] in ["BUY", "HOLD", "TAKE_PROFIT", "STOP_LOSS"]
+    assert 0 <= last_row["Confidence"] <= 5

@@ -8,10 +8,9 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data')
 os.makedirs(DATA_DIR, exist_ok=True)
 
 
-def load_price_data(symbol, period="1y", interval="1d"):
+def load_data(symbol, period="1y", interval="1d"):
     """
-    Load price data for a single ticker.
-    Attempts to load from local disk first; falls back to yfinance if needed.
+    Load price data for a single ticker from disk or yfinance.
     """
     file_path = os.path.join(DATA_DIR, f"{symbol}.csv")
 
@@ -59,9 +58,9 @@ def load_price_data(symbol, period="1y", interval="1d"):
         return None
 
 
-def load_data(filepath):
+def load_csv(filepath):
     """
-    Load a CSV file manually from path (used in dashboard uploads etc.)
+    Load a CSV file manually from path (used in dashboards, uploads, etc.)
     """
     df = pd.read_csv(filepath)
     df["Date"] = pd.to_datetime(df["Date"])
@@ -76,7 +75,7 @@ def load_all_price_data(tickers: list, period="1y", interval="1d") -> dict:
     """
     data = {}
     for symbol in tickers:
-        df = load_price_data(symbol, period, interval)
+        df = load_data(symbol, period, interval)
         if df is not None:
             data[symbol] = df
     return data

@@ -6,8 +6,9 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
+
 # === Path Setup ===
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "trading_bot"))
 sys.path.append(ROOT)
 
 from utils.data_loader import load_data
