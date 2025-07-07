@@ -8,40 +8,34 @@ import yfinance as yf
 from datetime import datetime
 
 # === PATH SETUP ===
-# Add root directory to path for module resolution
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 if ROOT_DIR not in sys.path:
-    sys.path.insert(0, ROOT_DIR)  # ✅ insert at index 0, not append
+    sys.path.insert(0, ROOT_DIR)
 
 # === Core Imports ===
 from core.strategy.combo_strategy import ComboStrategy
 from core.utils.data_loader import load_data
 from core.utils.equity_curve import load_equity_curves
 from core.utils.options_analyzer import get_options_chain
-from core.models.model_runner import enhance_with_ml  # ML stub
+from core.models.model_runner import enhance_with_ml
 
 # === UI Components ===
 from core.streamlit_app.components.signal_table import render_signals
 from core.streamlit_app.components.strategy_metrics import render_strategy_metrics
 from core.streamlit_app.components.trade_plot import render_trade_history
 from core.streamlit_app.components.winrate_chart import render_winrate_chart
-from core.treamlit_app.components.winrate_chart import plot_ml_vs_actual
-...
-plot_ml_vs_actual(df_signals)
-
+from core.streamlit_app.components.winrate_chart import plot_ml_vs_actual
 
 # === Constants & Setup ===
 SCAN_RESULTS = "results/scan_results.json"
 TRADE_LOG = "trades/trade_log.json"
 PERF_LOG = "logs/performance_log.json"
-
 os.makedirs("trades", exist_ok=True)
 
 # === Streamlit Setup ===
 st.set_page_config(page_title="📈 Trading Dashboard", layout="wide")
 st.title("📊 Trading Signal Dashboard")
 
-# 🔁 Auto-refresh every 30s
 st_autorefresh = st.empty()
 if st_autorefresh.button("🔄 Refresh Now"):
     st.experimental_rerun()
@@ -81,7 +75,6 @@ style = st.sidebar.selectbox("Trading Style", ["All", "Swing", "Day", "Options",
 min_conf = st.sidebar.slider("Min Confidence", 0, 5, 3)
 df = df[df["confidence"] >= min_conf]
 
-# Apply style filter
 if style == "Swing":
     df = df[df["buzz"] > 2]
 elif style == "Day":
@@ -101,10 +94,11 @@ st.subheader("🔎 Deep Dive")
 selected = st.selectbox("Choose a Ticker", top10["symbol"].unique() if not top10.empty else [])
 if selected:
     df_selected = load_data(selected, period="6mo")
-    df_selected = enhance_with_ml(df_selected)  # 🧠 ML plugin hook
+    df_selected = enhance_with_ml(df_selected)
 
     strategy = ComboStrategy()
     df_signals = strategy.generate_signals(df_selected)
+    plot_ml_vs_actual(df_signals)  # ✅ FIXED POSITION
 
     vote = strategy.vote_log[-1] if strategy.vote_log else {}
     if vote:
@@ -112,7 +106,7 @@ if selected:
         st.markdown(f"### {selected} — **{vote['Signal']}**")
         st.write(f"**Confidence:** {vote['Confidence']}/5")
         st.json(vote)
-        plot_trade_history(df_signals)
+        render_trade_history(df_signals)
 
 # === Equity Curve Comparison ===
 st.subheader("📈 Equity Curve Comparison")
