@@ -1,6 +1,6 @@
 # streamlit_app/dashboard.py
 
-import os, sys, json, time
+import sys, os, json, time
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -8,25 +8,20 @@ import yfinance as yf
 from datetime import datetime
 
 # === PATH SETUP ===
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "core")))
-
 # Add root directory to path for module resolution
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 
-from core.strategy.combo_strategy import ComboStrategy
-# ... your other imports
-
+# === Core Imports ===
 from core.strategy.combo_strategy import ComboStrategy
 from core.utils.data_loader import load_data
 from core.utils.equity_curve import load_equity_curves
 from core.utils.options_analyzer import get_options_chain
-from core.models.model_runner import enhance_with_ml  # 🧠 ML stub
+from core.models.model_runner import enhance_with_ml  # ML stub
 
-
-# Modular UI components
+# === UI Components ===
 from core.streamlit_app.components.signal_table import render_signals
 from core.streamlit_app.components.strategy_metrics import render_strategy_metrics
-from core.streamlit_app.components.trade_plot import plot_trade_history
+from core.streamlit_app.components.trade_plot import render_trade_history
 from core.streamlit_app.components.winrate_chart import render_winrate_chart
 from core.streamlit_app.components.winrate_chart import plot_ml_vs_actual
 ...
