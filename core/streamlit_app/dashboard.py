@@ -36,7 +36,6 @@ st.title("📊 Advanced Trading Dashboard")
 if st.button("🔄 Refresh Now"):
     st.rerun()
 
-
 # === Utility ===
 def safe_json(path, fallback=[]):
     try:
@@ -71,19 +70,29 @@ selected_symbols = st.sidebar.multiselect("Select Tickers", sorted(df["symbol"].
 signal_type = st.sidebar.multiselect("Signal Type", df["signal"].unique() if "signal" in df.columns else [], default=["BUY", "SELL"])
 suggested_strategies = st.sidebar.multiselect("Suggested Strategy", df["suggested_strategy"].unique() if "suggested_strategy" in df.columns else [], default=df["suggested_strategy"].unique() if "suggested_strategy" in df.columns else [])
 
-indicator_filter = st.sidebar.multiselect(
-    "Indicators to Show",
-    ["RSI", "MACD", "EMA200", "SMA50", "Bollinger Lower"],
-    default=["RSI", "MACD", "EMA200"]
-)
+# === Full Indicator Set ===
+available_indicators = sorted(set(k for row in df["indicators"] for k in row.keys()))
+indicator_filter = st.sidebar.multiselect("Indicators to Show", available_indicators, default=["RSI", "MACD", "EMA200"])
 
 # === Indicator Tooltips ===
 INDICATOR_INFO = {
-    "RSI": "Relative Strength Index – measures momentum. >70 = overbought (sell), <30 = oversold (buy).",
-    "MACD": "Moving Average Convergence Divergence – trend momentum. MACD > Signal = bullish.",
-    "EMA200": "200-period Exponential Moving Average – trend direction filter.",
-    "SMA50": "50-period Simple Moving Average – medium trend signal.",
-    "Bollinger Lower": "Lower band = volatility bottom. Price touching = potential reversal."
+    "RSI": "Relative Strength Index – >70: Overbought, <30: Oversold.",
+    "MACD": "MACD > Signal → Bullish momentum.",
+    "EMA200": "Long-term trend filter.",
+    "SMA50": "Medium-term trend indicator.",
+    "Bollinger Lower": "Volatility bottom. Reversal sign.",
+    "Bollinger Upper": "Volatility top. Reversal sign.",
+    "VWAP": "Volume Weighted Avg Price – fair intraday value.",
+    "Stochastic RSI": "Momentum of RSI. >80 overbought, <20 oversold.",
+    "Supertrend": "Trend-following signal.",
+    "Ichimoku": "Comprehensive trend framework.",
+    "ATR": "Volatility range (used for stop levels).",
+    "ADX": "Trend strength. >25 = strong trend.",
+    "OBV": "On-Balance Volume – accumulation/distribution.",
+    "IV": "Implied Volatility of options.",
+    "Delta": "Price sensitivity to underlying move.",
+    "Gamma": "Rate of change of delta.",
+    "Put/Call Ratio": "Sentiment indicator. >1 = bearish, <1 = bullish."
 }
 
 # === Apply Filters ===
@@ -125,15 +134,15 @@ for trade_type in TRADE_TYPES:
                 for ind, val in indicators.items():
                     if ind in indicator_filter:
                         desc = INDICATOR_INFO.get(ind, "")
-                        st.markdown(f"- 🧮 **{ind}**: `{val['value']}` → **Target:** `{val['target']}`")
+                        st.markdown(f"- 🧮 **{ind}**: `{val.get('value', 'N/A')}` → **Target:** `{val.get('target', 'N/A')}`")
                         if desc:
                             st.caption(desc)
 
                 if trade_type == "options":
                     chain = get_options_chain(row["symbol"])
-                    if chain is not None:
+                    if chain is not None and not chain.empty:
                         st.markdown("**🧾 Option Chain Snapshot**")
-                        st.write(chain.head(3))
+                        st.dataframe(chain.head(3))
 
                 news = row.get("news", [])
                 if news:
