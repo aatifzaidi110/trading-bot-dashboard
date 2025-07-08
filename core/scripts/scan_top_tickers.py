@@ -144,8 +144,10 @@ def safe_json_dump(data, path):
 
     with open(path, "w") as f:
         json.dump(data, f, indent=2, default=convert)
-
+    
+    
 # === Save Results ===
+print("Final signals count:", len(signals))  # 👈 Add this line
 if signals:
     df_signals = pd.DataFrame(signals)
     df_signals.to_csv(args.output, index=False)
