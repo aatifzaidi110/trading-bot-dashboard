@@ -3,21 +3,70 @@
     "symbol": "AAPL",
     "signal": "BUY",
     "confidence": 4,
+    "confidence_ratio": "4/5",
+    "sentiment_score": 0.72,
+    "buzz": 2.0,
+    "return_pct": 14.8,
+    "sharpe_ratio": 1.6,
+    "drawdown": 0.08,
+    "trades": 7,
+    "win_rate": 0.78,
+    "strategy": "ComboStrategy",
     "suggested_strategy": "EMA200 Trend",
-    "trade_type": "swing",
-    "stop_loss": 180.50,
+    "stop_loss": 180.5,
     "take_profit": 198.75,
-    "support": 178.00,
-    "resistance": 202.00,
+    "support": 178.0,
+    "resistance": 202.0,
+    "overkill": false,
     "indicators": {
       "RSI": { "value": 32, "target": 30 },
       "MACD": { "value": 1.5, "target": 0 },
-      "EMA200": { "value": 182, "target": 185 }
+      "Bollinger Lower": { "value": 175.2, "target": 181 },
+      "Bollinger Upper": { "value": 195.3, "target": 181 },
+      "EMA200": { "value": 182, "target": 185 },
+      "SMA50": { "value": 179, "target": 181 },
+      "Volume": { "value": 71000000, "target": "Above Avg" }
     },
+    "trade_type": "swing",
     "news": [
-      "Apple launches new AI chip (Reuters)",
-      "Strong Q2 earnings beat estimates (Bloomberg)"
+      "Apple unveils new AI-powered chips (Bloomberg)",
+      "iPhone demand drives record profits (Reuters)"
     ],
-    "date": "2025-07-08 18:30:00"
+    "notes": "Strong technical breakout with rising momentum.",
+    "date": "2025-07-08 20:15:00"
+  },
+  {
+    "symbol": "TSLA",
+    "signal": "SELL",
+    "confidence": 3,
+    "confidence_ratio": "3/5",
+    "sentiment_score": -0.4,
+    "buzz": 1.5,
+    "return_pct": 11.1,
+    "sharpe_ratio": 1.3,
+    "drawdown": 0.15,
+    "trades": 6,
+    "win_rate": 0.64,
+    "strategy": "ComboStrategy",
+    "suggested_strategy": "MACD Divergence",
+    "stop_loss": 750.2,
+    "take_profit": 695.0,
+    "support": 700.0,
+    "resistance": 760.0,
+    "overkill": true,
+    "indicators": {
+      "RSI": { "value": 88, "target": 70 },
+      "MACD": { "value": -1.2, "target": 0 },
+      "EMA200": { "value": 720, "target": 710 },
+      "SMA50": { "value": 730, "target": 710 },
+      "Volume": { "value": 85000000, "target": "Above Avg" }
+    },
+    "trade_type": "short",
+    "news": [
+      "Tesla deliveries fall short of expectations (CNBC)",
+      "CEO warns of margin pressures (Financial Times)"
+    ],
+    "notes": "Overbought + MACD crossover detected.",
+    "date": "2025-07-08 20:20:00"
   }
 ]
