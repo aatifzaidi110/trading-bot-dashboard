@@ -1,4 +1,4 @@
-# strategy/combo_strategy.py
+# core/strategy/combo_strategy.py
 
 import pandas as pd
 import logging
@@ -129,29 +129,37 @@ class ComboStrategy:
         df_signals = self.generate_signals(df)
         return df_signals["Signal"].iloc[-1] if not df_signals.empty else "HOLD"
 
+    def generate(self, df: pd.DataFrame) -> dict:
+        """
+        For scanner scripts (like scan_top_tickers.py).
+        Returns structured result dict.
+        """
+        signal = self.generate_signal(df)
+        confidence = self.vote_log[-1]["Confidence"] if self.vote_log else 0
+        return {
+            "signal": signal,
+            "confidence": confidence,
+            "details": self.vote_log[-1] if self.vote_log else {}
+        }
+
     def adapt_parameters(self):
-        """
-        Automatically adjust confidence requirements based on win rate.
-        """
         summary = self.tracker.get_performance_summary()
         total = summary.get("total_trades", 0)
         win_rate = summary.get("win_rate", 1)
 
         if total < 10:
-            return  # Not enough data yet
+            return
 
-        # Tune threshold
         if win_rate < 0.4:
             self.rsi_threshold += 2
             self.bollinger_std += 0.2
             self.min_win_rate_threshold = min(0.5, self.min_win_rate_threshold + 0.05)
-            logger.warning(f"📉 Strategy underperforming. Raised RSI threshold and Bollinger STD.")
-
+            logger.warning("📉 Strategy underperforming. Raised RSI threshold and Bollinger STD.")
         elif win_rate > 0.6:
             self.rsi_threshold = max(10, self.rsi_threshold - 2)
             self.bollinger_std = max(1.5, self.bollinger_std - 0.1)
             self.min_win_rate_threshold = max(0.1, self.min_win_rate_threshold - 0.05)
-            logger.info(f"📈 Strategy improving. Loosened RSI and Bollinger for more entries.")
+            logger.info("📈 Strategy improving. Loosened RSI and Bollinger for more entries.")
 
     def get_performance_summary(self):
         return self.tracker.get_performance_summary()

@@ -9,4 +9,5 @@ beautifulsoup4
 scikit-learn
 requests
 openpyxl
+python-dotenv
 # Force Streamlit Cloud rebuild

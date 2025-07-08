@@ -1,4 +1,4 @@
-# streamlit_app/dashboard.py
+# core/streamlit_app/dashboard.py
 
 import sys, os, json, time
 import pandas as pd
@@ -23,8 +23,7 @@ from core.models.model_runner import enhance_with_ml
 from core.streamlit_app.components.signal_table import render_signals
 from core.streamlit_app.components.strategy_metrics import render_strategy_metrics
 from core.streamlit_app.components.trade_plot import render_trade_history
-from core.streamlit_app.components.winrate_chart import render_winrate_chart
-from core.streamlit_app.components.winrate_chart import plot_ml_vs_actual
+from core.streamlit_app.components.winrate_chart import render_winrate_chart, plot_ml_vs_actual
 
 # === Constants & Setup ===
 SCAN_RESULTS = "core/results/scan_results.json"
@@ -45,12 +44,8 @@ st.query_params = {"refresh": str(time.time())}
 # === Load JSON safely ===
 def safe_json(path, fallback=[]):
     try:
-        st.write(f"🔍 Reading JSON: `{path}`")  # debug info
         with open(path) as f:
-            data = json.load(f)
-            st.write("✅ JSON loaded. Sample:")
-            st.json(data[:1] if isinstance(data, list) else data)
-            return data
+            return json.load(f)
     except Exception as e:
         st.error(f"❌ Failed to load {path}: {e}")
         return fallback
@@ -71,8 +66,8 @@ def get_price(symbol):
     except:
         return None
 
-df["Current Price"] = df["symbol"].apply(get_price)
-df.dropna(subset=["Current Price"], inplace=True)
+df["current_price"] = df["symbol"].apply(get_price)
+df.dropna(subset=["current_price"], inplace=True)
 
 # === Sidebar Filters ===
 st.sidebar.header("🎯 Filter Signals")
@@ -89,25 +84,60 @@ elif style == "Options":
 elif style == "Short":
     df = df[df["sentiment_score"] < 0]
 
-# === Show Top Opportunities ===
-top10 = df.sort_values(by=["confidence", "sentiment_score", "return_pct"], ascending=False).head(10)
-st.subheader("🏆 Top 10 Trading Opportunities")
-render_signals(top10)
+# === Show Opportunities by Trade Type ===
+st.subheader("🎯 Trade Type Breakdown")
+
+TRADE_TYPES = ["long", "short", "swing", "scalping", "options"]
+for trade_type in TRADE_TYPES:
+    trade_df = df[df["trade_type"] == trade_type].sort_values(by="confidence", ascending=False).head(10)
+
+    with st.expander(f"📈 Top {trade_type.capitalize()} Setups ({len(trade_df)})", expanded=False):
+        if trade_df.empty:
+            st.info("No signals available.")
+            continue
+
+        for _, row in trade_df.iterrows():
+            col1, col2 = st.columns([2, 3])
+
+            with col1:
+                st.markdown(f"### **{row['symbol']}**")
+                st.write(f"**Current Price:** ${row['current_price']}")
+                st.write(f"**Confidence:** {row['confidence']} / 5")
+                st.write(f"**Sentiment:** {row.get('sentiment_score', 'N/A')}")
+                st.write(f"**Suggested Strategy:** {row.get('suggested_strategy', 'ComboStrategy')}")
+                st.write(f"**Stop Loss:** {row.get('stop_loss', 'N/A')}")
+                st.write(f"**Take Profit:** {row.get('take_profit', 'N/A')}")
+                st.write(f"**Support:** {row.get('support', 'N/A')}")
+                st.write(f"**Resistance:** {row.get('resistance', 'N/A')}")
+
+            with col2:
+                st.markdown("**📊 Indicator Summary**")
+                indicators = row.get("indicators", {})
+                if indicators:
+                    for name, info in indicators.items():
+                        st.write(f"- {name}: `{info.get('value')}` (Target: `{info.get('target')}`)")
+                else:
+                    st.write("No indicators found.")
+
+                news = row.get("news", [])
+                if news:
+                    st.markdown("🗞 **News Headlines**")
+                    for n in news[:3]:
+                        st.write(f"- {n}")
 
 # === Deep Dive on Selected Ticker ===
 st.subheader("🔎 Deep Dive")
-selected = st.selectbox("Choose a Ticker", top10["symbol"].unique() if not top10.empty else [])
+selected = st.selectbox("Choose a Ticker", df["symbol"].unique() if not df.empty else [])
 if selected:
     df_selected = load_data(selected, period="6mo")
     df_selected = enhance_with_ml(df_selected)
 
     strategy = ComboStrategy()
     df_signals = strategy.generate_signals(df_selected)
-    plot_ml_vs_actual(df_signals)  # ✅ FIXED POSITION
+    plot_ml_vs_actual(df_signals)
 
     vote = strategy.vote_log[-1] if strategy.vote_log else {}
     if vote:
-        price = vote.get("Price", 0)
         st.markdown(f"### {selected} — **{vote['Signal']}**")
         st.write(f"**Confidence:** {vote['Confidence']}/5")
         st.json(vote)
@@ -115,7 +145,7 @@ if selected:
 
 # === Equity Curve Comparison ===
 st.subheader("📈 Equity Curve Comparison")
-eq_df = load_equity_curves(top10["symbol"].tolist())
+eq_df = load_equity_curves(df["symbol"].tolist())
 if not eq_df.empty:
     st.line_chart(eq_df.set_index("Date"))
 
