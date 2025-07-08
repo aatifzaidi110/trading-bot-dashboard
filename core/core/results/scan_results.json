@@ -1,0 +1,23 @@
+[
+  {
+    "symbol": "AAPL",
+    "signal": "BUY",
+    "confidence": 4,
+    "suggested_strategy": "EMA200 Trend",
+    "trade_type": "swing",
+    "stop_loss": 180.50,
+    "take_profit": 198.75,
+    "support": 178.00,
+    "resistance": 202.00,
+    "indicators": {
+      "RSI": { "value": 32, "target": 30 },
+      "MACD": { "value": 1.5, "target": 0 },
+      "EMA200": { "value": 182, "target": 185 }
+    },
+    "news": [
+      "Apple launches new AI chip (Reuters)",
+      "Strong Q2 earnings beat estimates (Bloomberg)"
+    ],
+    "date": "2025-07-08 18:30:00"
+  }
+]
