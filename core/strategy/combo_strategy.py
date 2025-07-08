@@ -15,7 +15,7 @@ from core.indicators.indicators import (
 logger = logging.getLogger(__name__)
 
 class ComboStrategy:
-    def __init__(self, sma_fast=20, sma_slow=50, rsi_period=14, rsi_threshold=30,
+    def __init__(self, sma_fast=20, sma_slow=50, rsi_period=14, rsi_threshold=40,
                  macd_fast=12, macd_slow=26, macd_signal=9,
                  bollinger_window=20, bollinger_std=2, ema_period=200,
                  stop_loss_pct=0.02, take_profit_pct=0.04, name="ComboStrategy"):
@@ -152,7 +152,7 @@ class ComboStrategy:
 
         if win_rate < 0.4:
             self.rsi_threshold += 2
-            self.bollinger_std += 0.2
+            self.bollinger_std += 0.25
             self.min_win_rate_threshold = min(0.5, self.min_win_rate_threshold + 0.05)
             logger.warning("📉 Strategy underperforming. Raised RSI threshold and Bollinger STD.")
         elif win_rate > 0.6:

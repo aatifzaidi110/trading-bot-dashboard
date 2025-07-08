@@ -32,7 +32,7 @@ os.makedirs("trades", exist_ok=True)
 st.set_page_config(page_title="📈 Trading Dashboard", layout="wide")
 st.title("📊 Advanced Trading Dashboard")
 
-# === Refresh
+# === Refresh Button ===
 if st.button("🔄 Refresh Now"):
     st.experimental_rerun()
 
@@ -57,6 +57,7 @@ results = safe_json(SCAN_RESULTS)
 if not results:
     st.warning("⚠️ No scan results found. Run the bot first.")
     st.stop()
+
 df = pd.DataFrame(results)
 df["current_price"] = df["symbol"].apply(get_price)
 df.dropna(subset=["current_price"], inplace=True)
@@ -65,16 +66,15 @@ df.dropna(subset=["current_price"], inplace=True)
 st.sidebar.header("🎯 Filter")
 style = st.sidebar.selectbox("Trading Style", ["All", "Swing", "Day", "Scalping", "Options", "Short"])
 min_conf = st.sidebar.slider("Min Confidence", 0, 5, 3)
+selected_symbols = st.sidebar.multiselect("Select Tickers", sorted(df["symbol"].unique()), default=list(df["symbol"].unique()))
+signal_type = st.sidebar.multiselect("Signal Type", df["signal"].unique() if "signal" in df.columns else [], default=["BUY", "SELL"])
+suggested_strategies = st.sidebar.multiselect("Suggested Strategy", df["suggested_strategy"].unique() if "suggested_strategy" in df.columns else [], default=df["suggested_strategy"].unique() if "suggested_strategy" in df.columns else [])
+
 indicator_filter = st.sidebar.multiselect(
     "Indicators to Show",
     ["RSI", "MACD", "EMA200", "SMA50", "Bollinger Lower"],
     default=["RSI", "MACD", "EMA200"]
 )
-
-# Apply style and confidence filters
-df = df[df["confidence"] >= min_conf]
-if style != "All":
-    df = df[df["trade_type"] == style.lower()]
 
 # === Indicator Tooltips ===
 INDICATOR_INFO = {
@@ -85,17 +85,26 @@ INDICATOR_INFO = {
     "Bollinger Lower": "Lower band = volatility bottom. Price touching = potential reversal."
 }
 
+# === Apply Filters ===
+df = df[df["confidence"] >= min_conf]
+df = df[df["symbol"].isin(selected_symbols)]
+
+if style != "All":
+    df = df[df["trade_type"] == style.lower()]
+if "signal" in df.columns and signal_type:
+    df = df[df["signal"].isin(signal_type)]
+if "suggested_strategy" in df.columns and suggested_strategies:
+    df = df[df["suggested_strategy"].isin(suggested_strategies)]
+
 # === Trade Type Breakdown
-st.subheader("📊 Top Signals by Trade Type")
+st.subheader("📊 Filtered Signals")
 TRADE_TYPES = ["scalping", "day", "swing", "long", "options", "short"]
 
 for trade_type in TRADE_TYPES:
-    group_df = df[df["trade_type"] == trade_type].sort_values(by="confidence", ascending=False).head(10)
+    group_df = df[df["trade_type"] == trade_type].sort_values(by="confidence", ascending=False)
+    if group_df.empty:
+        continue
     with st.expander(f"🚀 {trade_type.capitalize()} Signals ({len(group_df)})", expanded=False):
-        if group_df.empty:
-            st.info("No entries available.")
-            continue
-
         for _, row in group_df.iterrows():
             col1, col2 = st.columns([2, 3])
             with col1:
@@ -119,14 +128,12 @@ for trade_type in TRADE_TYPES:
                         if desc:
                             st.caption(desc)
 
-                # === Options Extras
                 if trade_type == "options":
                     chain = get_options_chain(row["symbol"])
-                    if chain:
+                    if chain is not None:
                         st.markdown("**🧾 Option Chain Snapshot**")
                         st.write(chain.head(3))
 
-                # === News
                 news = row.get("news", [])
                 if news:
                     st.markdown("📰 **News Headlines**")
