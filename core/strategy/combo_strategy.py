@@ -83,7 +83,7 @@ class ComboStrategy:
             signal = "HOLD"
 
             # === Buy Logic ===
-            if position is None and confidence == 5:
+            if position is None and confidence == 3:
                 signal = "BUY"
                 position = "LONG"
                 entry_price = price

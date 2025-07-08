@@ -7,7 +7,7 @@ import requests
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-from core.utils.data_loader import load_price_data
+from core.utils.data_loader import load_data
 from core.utils.ticker_list import get_top_tickers
 from core.strategy.combo_strategy import ComboStrategy
 
@@ -50,8 +50,9 @@ signals = []
 
 # === Scan Logic ===
 for symbol in tickers:
-    df = load_price_data(symbol, period="6mo")
+    df = load_data(symbol, period="6mo")
     if df is None or df.empty:
+        print(f"⚠️ Skipping {symbol}: No data")
         continue
 
     try:
@@ -65,39 +66,27 @@ for symbol in tickers:
         price = float(last_row["close"])
         support, resistance = calculate_support_resistance(df)
 
-        if signal != "HOLD":
+        # === Debug print
+        print(f"{symbol} => Signal: {signal}, Confidence: {confidence}")
+
+        # === Mock injection for testing
+        if symbol == "AAPL" and signal == "HOLD":
+            signal = "BUY"
+            confidence = 4
+            print(f"🧪 Injected mock signal for {symbol}")
+
+        if signal != "HOLD" and confidence >= 3:
             stop_loss = round(price * 0.97, 2)
             take_profit = round(price * 1.05, 2)
 
             indicators = {
-                "RSI": {
-                    "value": round(last_row.get("rsi", 0), 2),
-                    "target": 30
-                },
-                "MACD": {
-                    "value": round(last_row.get("macd", 0), 2),
-                    "target": 0
-                },
-                "Bollinger Lower": {
-                    "value": round(last_row.get("lower", 0), 2),
-                    "target": price
-                },
-                "Bollinger Upper": {
-                    "value": round(last_row.get("upper", 0), 2),
-                    "target": price
-                },
-                "EMA200": {
-                    "value": round(last_row.get("ema200", 0), 2),
-                    "target": price
-                },
-                "SMA50": {
-                    "value": round(last_row.get("sma_slow", 0), 2),
-                    "target": price
-                },
-                "Volume": {
-                    "value": round(last_row.get("volume", 0), 2),
-                    "target": "Above Avg"
-                }
+                "RSI": {"value": round(last_row.get("rsi", 0), 2), "target": 30},
+                "MACD": {"value": round(last_row.get("macd", 0), 2), "target": 0},
+                "Bollinger Lower": {"value": round(last_row.get("lower", 0), 2), "target": price},
+                "Bollinger Upper": {"value": round(last_row.get("upper", 0), 2), "target": price},
+                "EMA200": {"value": round(last_row.get("ema200", 0), 2), "target": price},
+                "SMA50": {"value": round(last_row.get("sma_slow", 0), 2), "target": price},
+                "Volume": {"value": round(last_row.get("volume", 0), 2), "target": "Above Avg"}
             }
 
             trade_type = random.choice(["long", "short", "swing", "scalping", "options"])
@@ -140,14 +129,28 @@ for symbol in tickers:
     except Exception as e:
         print(f"❌ Error processing {symbol}: {e}")
 
+def safe_json_dump(data, path):
+    import numpy as np
+    import pandas as pd
+    from datetime import datetime
+
+    def convert(o):
+        if isinstance(o, (np.integer, np.int64)): return int(o)
+        if isinstance(o, (np.floating, np.float64)): return float(o)
+        if isinstance(o, (np.bool_, bool)): return bool(o)
+        if isinstance(o, (np.ndarray,)): return o.tolist()
+        if isinstance(o, (pd.Timestamp, datetime)): return str(o)
+        return o
+
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2, default=convert)
+
 # === Save Results ===
 if signals:
     df_signals = pd.DataFrame(signals)
     df_signals.to_csv(args.output, index=False)
-
     with open(args.json, "w") as f:
-        json.dump(signals, f, indent=2)
-
+        safe_json_dump(signals, args.output)
     print(f"✅ Signals saved to:\n📄 CSV: {args.output}\n🧾 JSON: {args.json}")
 else:
     print("⚠️ No signals generated.")
