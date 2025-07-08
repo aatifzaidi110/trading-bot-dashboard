@@ -66,7 +66,6 @@ for symbol in tickers:
         price = float(last_row["close"])
         support, resistance = calculate_support_resistance(df)
 
-        # === Debug print
         print(f"{symbol} => Signal: {signal}, Confidence: {confidence}")
 
         # === Mock injection for testing
@@ -129,6 +128,8 @@ for symbol in tickers:
     except Exception as e:
         print(f"❌ Error processing {symbol}: {e}")
 
+
+# === JSON Safe Dump Helper ===
 def safe_json_dump(data, path):
     import numpy as np
     import pandas as pd
@@ -144,15 +145,13 @@ def safe_json_dump(data, path):
 
     with open(path, "w") as f:
         json.dump(data, f, indent=2, default=convert)
-    
-    
+
 # === Save Results ===
-print("Final signals count:", len(signals))  # 👈 Add this line
+print("Final signals count:", len(signals))
 if signals:
     df_signals = pd.DataFrame(signals)
     df_signals.to_csv(args.output, index=False)
-    with open(args.json, "w") as f:
-        safe_json_dump(signals, args.output)
+    safe_json_dump(signals, args.json)
     print(f"✅ Signals saved to:\n📄 CSV: {args.output}\n🧾 JSON: {args.json}")
 else:
     print("⚠️ No signals generated.")
