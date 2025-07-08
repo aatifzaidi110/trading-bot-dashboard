@@ -24,9 +24,11 @@ from core.streamlit_app.components.trade_plot import render_trade_history
 from core.streamlit_app.components.winrate_chart import render_winrate_chart, plot_ml_vs_actual
 
 # === Constants ===
-SCAN_RESULTS = "core/results/scan_results.json"
-TRADE_LOG = "core/trades/trade_log.json"
-PERF_LOG = "core/logs/performance_log.json"
+OT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+SCAN_RESULTS = os.path.join(ROOT_DIR, "core", "results", "scan_results.json")
+TRADE_LOG = os.path.join(ROOT_DIR, "core", "trades", "trade_log.json")
+PERF_LOG = os.path.join(ROOT_DIR, "core", "logs", "performance_log.json")
+
 os.makedirs("trades", exist_ok=True)
 
 st.set_page_config(page_title="📈 Trading Dashboard", layout="wide")
