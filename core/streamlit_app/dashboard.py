@@ -34,7 +34,8 @@ st.title("📊 Advanced Trading Dashboard")
 
 # === Refresh Button ===
 if st.button("🔄 Refresh Now"):
-    st.experimental_rerun()
+    st.rerun()
+
 
 # === Utility ===
 def safe_json(path, fallback=[]):
