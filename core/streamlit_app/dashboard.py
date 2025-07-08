@@ -1,5 +1,3 @@
-# core/streamlit_app/dashboard.py
-
 import sys, os, json, time
 import pandas as pd
 import numpy as np
@@ -25,23 +23,20 @@ from core.streamlit_app.components.strategy_metrics import render_strategy_metri
 from core.streamlit_app.components.trade_plot import render_trade_history
 from core.streamlit_app.components.winrate_chart import render_winrate_chart, plot_ml_vs_actual
 
-# === Constants & Setup ===
+# === Constants ===
 SCAN_RESULTS = "core/results/scan_results.json"
 TRADE_LOG = "core/trades/trade_log.json"
 PERF_LOG = "core/logs/performance_log.json"
 os.makedirs("trades", exist_ok=True)
 
-# === Streamlit Setup ===
 st.set_page_config(page_title="📈 Trading Dashboard", layout="wide")
-st.title("📊 Trading Signal Dashboard")
+st.title("📊 Advanced Trading Dashboard")
 
-st_autorefresh = st.empty()
-if st_autorefresh.button("🔄 Refresh Now"):
+# === Refresh
+if st.button("🔄 Refresh Now"):
     st.experimental_rerun()
-st_autorefresh.empty()
-st.query_params = {"refresh": str(time.time())}
 
-# === Load JSON safely ===
+# === Utility ===
 def safe_json(path, fallback=[]):
     try:
         with open(path) as f:
@@ -50,15 +45,6 @@ def safe_json(path, fallback=[]):
         st.error(f"❌ Failed to load {path}: {e}")
         return fallback
 
-# === Load Data ===
-results = safe_json(SCAN_RESULTS)
-if not results:
-    st.warning("⚠️ No scan results found. Run the bot first.")
-    st.stop()
-
-df = pd.DataFrame(results)
-
-# === Add Current Prices ===
 def get_price(symbol):
     try:
         price = yf.Ticker(symbol).history(period="1d")["Close"].iloc[-1]
@@ -66,72 +52,93 @@ def get_price(symbol):
     except:
         return None
 
+# === Load Data ===
+results = safe_json(SCAN_RESULTS)
+if not results:
+    st.warning("⚠️ No scan results found. Run the bot first.")
+    st.stop()
+df = pd.DataFrame(results)
 df["current_price"] = df["symbol"].apply(get_price)
 df.dropna(subset=["current_price"], inplace=True)
 
 # === Sidebar Filters ===
-st.sidebar.header("🎯 Filter Signals")
-style = st.sidebar.selectbox("Trading Style", ["All", "Swing", "Day", "Options", "Short"])
+st.sidebar.header("🎯 Filter")
+style = st.sidebar.selectbox("Trading Style", ["All", "Swing", "Day", "Scalping", "Options", "Short"])
 min_conf = st.sidebar.slider("Min Confidence", 0, 5, 3)
+indicator_filter = st.sidebar.multiselect(
+    "Indicators to Show",
+    ["RSI", "MACD", "EMA200", "SMA50", "Bollinger Lower"],
+    default=["RSI", "MACD", "EMA200"]
+)
+
+# Apply style and confidence filters
 df = df[df["confidence"] >= min_conf]
+if style != "All":
+    df = df[df["trade_type"] == style.lower()]
 
-if style == "Swing":
-    df = df[df["buzz"] > 2]
-elif style == "Day":
-    df = df[df["return_pct"] > 0]
-elif style == "Options":
-    df = df[df["confidence"] >= 3]
-elif style == "Short":
-    df = df[df["sentiment_score"] < 0]
+# === Indicator Tooltips ===
+INDICATOR_INFO = {
+    "RSI": "Relative Strength Index – measures momentum. >70 = overbought (sell), <30 = oversold (buy).",
+    "MACD": "Moving Average Convergence Divergence – trend momentum. MACD > Signal = bullish.",
+    "EMA200": "200-period Exponential Moving Average – trend direction filter.",
+    "SMA50": "50-period Simple Moving Average – medium trend signal.",
+    "Bollinger Lower": "Lower band = volatility bottom. Price touching = potential reversal."
+}
 
-# === Show Opportunities by Trade Type ===
-st.subheader("🎯 Trade Type Breakdown")
+# === Trade Type Breakdown
+st.subheader("📊 Top Signals by Trade Type")
+TRADE_TYPES = ["scalping", "day", "swing", "long", "options", "short"]
 
-TRADE_TYPES = ["long", "short", "swing", "scalping", "options"]
 for trade_type in TRADE_TYPES:
-    trade_df = df[df["trade_type"] == trade_type].sort_values(by="confidence", ascending=False).head(10)
-
-    with st.expander(f"📈 Top {trade_type.capitalize()} Setups ({len(trade_df)})", expanded=False):
-        if trade_df.empty:
-            st.info("No signals available.")
+    group_df = df[df["trade_type"] == trade_type].sort_values(by="confidence", ascending=False).head(10)
+    with st.expander(f"🚀 {trade_type.capitalize()} Signals ({len(group_df)})", expanded=False):
+        if group_df.empty:
+            st.info("No entries available.")
             continue
 
-        for _, row in trade_df.iterrows():
+        for _, row in group_df.iterrows():
             col1, col2 = st.columns([2, 3])
-
             with col1:
                 st.markdown(f"### **{row['symbol']}**")
-                st.write(f"**Current Price:** ${row['current_price']}")
-                st.write(f"**Confidence:** {row['confidence']} / 5")
-                st.write(f"**Sentiment:** {row.get('sentiment_score', 'N/A')}")
-                st.write(f"**Suggested Strategy:** {row.get('suggested_strategy', 'ComboStrategy')}")
-                st.write(f"**Stop Loss:** {row.get('stop_loss', 'N/A')}")
-                st.write(f"**Take Profit:** {row.get('take_profit', 'N/A')}")
-                st.write(f"**Support:** {row.get('support', 'N/A')}")
-                st.write(f"**Resistance:** {row.get('resistance', 'N/A')}")
+                st.write(f"📈 **Current Price:** ${row['current_price']}")
+                st.write(f"🔒 **Confidence:** {row['confidence']}/5")
+                st.write(f"🧠 **Sentiment Score:** {row.get('sentiment_score', 'N/A')}")
+                st.write(f"📌 **Strategy:** {row.get('suggested_strategy', 'ComboStrategy')}")
+                st.write(f"🛑 **Stop Loss:** {row.get('stop_loss', 'N/A')}")
+                st.write(f"🎯 **Take Profit:** {row.get('take_profit', 'N/A')}")
+                st.write(f"🧱 **Support:** {row.get('support', 'N/A')}")
+                st.write(f"📉 **Resistance:** {row.get('resistance', 'N/A')}")
 
             with col2:
-                st.markdown("**📊 Indicator Summary**")
+                st.markdown("**📊 Indicators**")
                 indicators = row.get("indicators", {})
-                if indicators:
-                    for name, info in indicators.items():
-                        st.write(f"- {name}: `{info.get('value')}` (Target: `{info.get('target')}`)")
-                else:
-                    st.write("No indicators found.")
+                for ind, val in indicators.items():
+                    if ind in indicator_filter:
+                        desc = INDICATOR_INFO.get(ind, "")
+                        st.markdown(f"- 🧮 **{ind}**: `{val['value']}` → **Target:** `{val['target']}`")
+                        if desc:
+                            st.caption(desc)
 
+                # === Options Extras
+                if trade_type == "options":
+                    chain = get_options_chain(row["symbol"])
+                    if chain:
+                        st.markdown("**🧾 Option Chain Snapshot**")
+                        st.write(chain.head(3))
+
+                # === News
                 news = row.get("news", [])
                 if news:
-                    st.markdown("🗞 **News Headlines**")
+                    st.markdown("📰 **News Headlines**")
                     for n in news[:3]:
                         st.write(f"- {n}")
 
-# === Deep Dive on Selected Ticker ===
-st.subheader("🔎 Deep Dive")
-selected = st.selectbox("Choose a Ticker", df["symbol"].unique() if not df.empty else [])
+# === Deep Dive
+st.subheader("🔎 Deep Dive Analysis")
+selected = st.selectbox("Select Ticker", df["symbol"].unique())
 if selected:
     df_selected = load_data(selected, period="6mo")
     df_selected = enhance_with_ml(df_selected)
-
     strategy = ComboStrategy()
     df_signals = strategy.generate_signals(df_selected)
     plot_ml_vs_actual(df_signals)
@@ -139,17 +146,17 @@ if selected:
     vote = strategy.vote_log[-1] if strategy.vote_log else {}
     if vote:
         st.markdown(f"### {selected} — **{vote['Signal']}**")
-        st.write(f"**Confidence:** {vote['Confidence']}/5")
+        st.write(f"Confidence: {vote['Confidence']}/5")
         st.json(vote)
         render_trade_history(df_signals)
 
-# === Equity Curve Comparison ===
+# === Equity Curves
 st.subheader("📈 Equity Curve Comparison")
 eq_df = load_equity_curves(df["symbol"].tolist())
 if not eq_df.empty:
     st.line_chart(eq_df.set_index("Date"))
 
-# === Strategy Metrics ===
+# === Performance Summary
 if os.path.exists(PERF_LOG):
     try:
         perf_df = pd.read_json(PERF_LOG)
@@ -159,10 +166,10 @@ if os.path.exists(PERF_LOG):
     except:
         st.warning("⚠️ Could not read performance_log.json")
 
-# === Export Section ===
+# === Export
 st.sidebar.markdown("### 💾 Export")
 if os.path.exists(TRADE_LOG):
-    trade_data = safe_json(TRADE_LOG)
-    df_trades = pd.DataFrame(trade_data)
+    trades = safe_json(TRADE_LOG)
+    df_trades = pd.DataFrame(trades)
     if not df_trades.empty:
         st.sidebar.download_button("📤 Export Trades", df_trades.to_csv(index=False), "trades.csv")
