@@ -69,7 +69,11 @@ st.sidebar.header("🎯 Filter")
 style = st.sidebar.selectbox("Trading Style", ["All", "Swing", "Day", "Scalping", "Options", "Short"])
 min_conf = st.sidebar.slider("Min Confidence", 0, 5, 3)
 selected_symbols = st.sidebar.multiselect("Select Tickers", sorted(df["symbol"].unique()), default=list(df["symbol"].unique()))
-signal_type = st.sidebar.multiselect("Signal Type", df["signal"].unique() if "signal" in df.columns else [], default=["BUY", "SELL"])
+available_signals = df["signal"].unique().tolist() if "signal" in df.columns else []
+default_signals = [s for s in ["BUY", "SELL"] if s in available_signals]
+
+signal_type = st.sidebar.multiselect("Signal Type", available_signals, default=default_signals)
+
 suggested_strategies = st.sidebar.multiselect("Suggested Strategy", df["suggested_strategy"].unique() if "suggested_strategy" in df.columns else [], default=df["suggested_strategy"].unique() if "suggested_strategy" in df.columns else [])
 
 # === Full Indicator Set ===
