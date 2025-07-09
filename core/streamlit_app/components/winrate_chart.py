@@ -4,7 +4,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from utils.cleaning import clean_ml_chart_data  # ✅ import cleaning helper
+from core.utils.cleaning import clean_ml_chart_data  # ✅ import cleaning helper
 
 
 def render_winrate_chart(perf_df: pd.DataFrame):
