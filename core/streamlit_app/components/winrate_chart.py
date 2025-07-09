@@ -3,12 +3,11 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import altair as alt
+import plotly.graph_objects as go
+from utils.cleaning import clean_ml_chart_data  # ✅ import cleaning helper
+
 
 def render_winrate_chart(perf_df: pd.DataFrame):
-    """
-    Render a bar chart showing strategy win rate by ticker.
-    """
     if perf_df.empty:
         st.info("No strategy performance to show.")
         return
@@ -27,44 +26,60 @@ def render_winrate_chart(perf_df: pd.DataFrame):
     fig.update_layout(yaxis_tickformat=".0%", height=400)
     st.plotly_chart(fig, use_container_width=True)
 
+
 def plot_ml_vs_actual(df_signals: pd.DataFrame):
-    """
-    Overlay ML prediction confidence vs close price over time.
-    """
     st.subheader("🤖 ML Confidence vs Price Outcome")
 
-    # Required columns
-    required_cols = ["Date", "ml_prediction", "close"]
-    missing_cols = [col for col in required_cols if col not in df_signals.columns]
-
-    if missing_cols:
-        st.warning(f"Missing columns for ML chart: {missing_cols}")
-        return
-
-    # Prepare data safely
-    df = df_signals[required_cols].copy()
-    df["Date"] = pd.to_datetime(df["Date"], errors='coerce')
-    df["ml_prediction"] = pd.to_numeric(df["ml_prediction"], errors='coerce')
-    df["close"] = pd.to_numeric(df["close"], errors='coerce')
-    df.dropna(subset=["Date", "ml_prediction", "close"], inplace=True)
-
+    df = clean_ml_chart_data(df_signals)  # ✅ clean data
     if df.empty:
-        st.info("No valid data available to display ML vs Price chart.")
+        st.warning("Not enough data to plot ML confidence.")
         return
 
-    # Build altair chart
-    chart = alt.Chart(df).transform_fold(
-        ["ml_prediction", "close"],
-        as_=["Metric", "Value"]
-    ).mark_line().encode(
-        x=alt.X("Date:T", title="Date"),
-        y=alt.Y("Value:Q", title="Value"),
-        color="Metric:N",
-        tooltip=["Date:T", "Metric:N", "Value:Q"]
-    ).properties(
-        height=400,
-        width="container",
-        title="ML Confidence and Price Over Time"
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=df["Date"], y=df["ml_prediction"],
+                             mode='lines+markers',
+                             name='ML Prediction',
+                             line=dict(color='blue')))
+    fig.add_trace(go.Scatter(x=df["Date"], y=df["close"],
+                             mode='lines+markers',
+                             name='Close Price',
+                             line=dict(color='green')))
+
+    fig.update_layout(
+        title="ML Confidence and Price Over Time",
+        xaxis_title="Date",
+        yaxis_title="Value",
+        height=400
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+
+def plot_candlestick_chart(df_signals: pd.DataFrame):
+    st.subheader("📈 Candlestick Price Chart")
+
+    required_cols = ["Date", "open", "high", "low", "close"]
+    if not all(col in df_signals.columns for col in required_cols):
+        st.warning("Candlestick data incomplete.")
+        return
+
+    df = df_signals.copy()
+    df["Date"] = pd.to_datetime(df["Date"])
+
+    fig = go.Figure(data=[go.Candlestick(
+        x=df["Date"],
+        open=df["open"],
+        high=df["high"],
+        low=df["low"],
+        close=df["close"],
+        increasing_line_color='green',
+        decreasing_line_color='red'
+    )])
+
+    fig.update_layout(
+        title="Candlestick Chart",
+        xaxis_title="Date",
+        yaxis_title="Price",
+        height=500
     )
 
-    st.altair_chart(chart, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
